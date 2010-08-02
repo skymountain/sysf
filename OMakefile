@@ -36,6 +36,7 @@ FILES[] =
 	parser
 	lexer
 	eval
+	typing
 	main
 
 PROGRAM = sysf

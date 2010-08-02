@@ -15,7 +15,7 @@ let pps_val = function
   | TypeFunV _ -> "<type fun>"
 
 let pp_val v =
-  print_string $ pps_val v
+  print_string @< pps_val v
 
 let eval_binop = function
     (Plus, IntV vl, IntV vr) -> IntV (vl + vr)
@@ -26,20 +26,25 @@ let eval_binop = function
   | (Div, _, _)  -> err "both arguments of / must be integer"
       
 let rec eval_exp env = function
-    Var id -> (match Env.lookup env id with
-                 None -> err $ Printf.sprintf "%s is not bound" id
-               | Some v -> v)
+    Var id ->
+      begin match Env.lookup env id with
+        None -> err @< Printf.sprintf "%s is not bound" id
+      | Some v -> v
+      end
   | IntLit i -> IntV i
   | BinOp (op, el, er) -> eval_binop (op, eval_exp env el, eval_exp env er)
   | Fun (para, _, body) -> FunV (para, body, env)
   | App (f, act) ->
-      let f = eval_exp env f in
-      (match f with
-         FunV (formal, body, env) ->
-           let act = eval_exp env act in
-           eval_exp $ Env.extend env formal act $ body
-       | TypeFunV (body, env)     -> eval_exp env body
-       | _                        -> err "Not-function value is applied")
-  | TypeFun (_, exp) -> TypeFunV (exp, env)
-
+      begin match eval_exp env f, eval_exp env act with
+        FunV (formal, body, env'), act ->
+          eval_exp (Env.extend env' formal act) body
+      | _ -> err "Not-function value is applied"
+      end
+  | TypeFun (_, body) -> TypeFunV (body, env)
+  | TypeApp (f, _) ->
+      begin match eval_exp env f with
+        TypeFunV (body, env) -> eval_exp env body
+      | _          -> err "Non-type function value is applied"
+      end
+        
 let eval env decl = env, "it", eval_exp env decl
