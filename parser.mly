@@ -17,7 +17,8 @@
 %token PLUS ASTER SLASH
 %token<Syntax.id> IDENT APOSTIDENT
 %token<int> INTLIT
-
+%token EOF
+  
 %left PLUS
 %left ASTER SLASH
   
@@ -26,8 +27,8 @@
 %%
   
 main:
-  Expr SEMICOLON2 { $1 }
-
+  Expr SEMICOLON2 { Prog $1 }
+| EOF { Syntax.EOF }
 Expr:
   BACKSLA IDENT COLON FunExpr DOT Expr { Fun ($2, $4, $6) }
 | BACKSLA2 IDENT DOT Expr { TypeFun ($2, $4) }

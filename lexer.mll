@@ -34,4 +34,4 @@ rule main = parse
       }
 | '\'' alphabet+ { let s = Lexing.lexeme lexbuf in
                    Parser.APOSTIDENT (String.sub s 1 @< String.length s - 1) }
-| eof    { exit 0 }
+| eof    { EOF }

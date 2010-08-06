@@ -19,4 +19,7 @@ type exp =
   | App     of exp * exp
   | TypeFun of id * exp
   | TypeApp of exp * typ
-type program = exp
+      
+type program =
+    Prog of exp
+  | EOF
