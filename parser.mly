@@ -9,6 +9,16 @@
     match OptionList.assoc s reserv_types with
       None -> VarT  s
     | Some t -> t
+
+  let rec substitute x exp body = match body with
+      Var y when x = y -> exp
+    | BinOp (op, lexp, rexp) -> BinOp (op, substitute x exp lexp, substitute x exp rexp)
+    | Fun (y, t, f) when x <> y -> Fun (y, t, substitute x exp f)
+    | App (f, arg) -> App (substitute x exp f, substitute x exp arg)
+    | TypeFun (y, f) -> TypeFun (y, substitute x exp f)
+    | TypeApp (f, arg) -> TypeApp (substitute x exp f, arg)
+    | _ -> body
+        
 %}
 
 %token BACKSLA BACKSLA2 COLON DOT SEMICOLON2
@@ -18,6 +28,7 @@
 %token<Syntax.id> IDENT APOSTIDENT
 %token<int> INTLIT
 %token EOF
+%token LET IN EQUAL
   
 %left PLUS
 %left ASTER SLASH
@@ -29,9 +40,11 @@
 main:
   Expr SEMICOLON2 { Prog $1 }
 | EOF { Syntax.EOF }
+      
 Expr:
   BACKSLA IDENT COLON FunExpr DOT Expr { Fun ($2, $4, $6) }
 | BACKSLA2 IDENT DOT Expr { TypeFun ($2, $4) }
+| LET IDENT EQUAL Expr IN Expr { substitute $2 $4 $6 }
 | ArithExpr { $1 }
       
 ArithExpr:      

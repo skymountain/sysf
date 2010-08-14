@@ -4,6 +4,8 @@
 
   exception Lexical_error
   let reserv_words = [
+    ("let", Parser.LET);
+    ("in" , Parser.IN);
   ]
 }
 
@@ -26,6 +28,7 @@ rule main = parse
 | "\\\\" { Parser.BACKSLA2 }
 | ";;"   { Parser.SEMICOLON2 }
 | "->"   { Parser.RARROW }
+| "="    { Parser.EQUAL }
 | "-"? [ '0'-'9' ]+ { Parser.INTLIT (int_of_string @< Lexing.lexeme lexbuf) }
 | ident_top ident_bdy*
       { let s = Lexing.lexeme lexbuf in
